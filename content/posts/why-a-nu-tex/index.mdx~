@@ -1,0 +1,181 @@
+---
+title: Why a nu TeX?
+date: 2020-03-20
+slug: /why-a-nu-TeX
+tags:
+    - Projects
+    - Typesetting
+---
+
+I've brought the idea of creating a new typesetting engine to people a number
+of times to different people, and they often have similar responses...
+
++ Why? LaTeX is fine! I've been using it for years and it can do anything
+that you could ever need.
+
++ Why don't you just use HTML/CSS??
+
++ So...you're talking about making something like Microsoft Word?
+
+I'll be addressing these three responses in this post, hopefully, as a means
+of initiating a more formal outlining of my dream for effortless, reliable
+typesetting.
+
+### So... Microsoft Word?
+
+Microsoft Word has a fundamental issue with its approach to typesetting: it
+simultaneously does too much and too little. Users are allowed the freedom to
+make many adjustments to the formatting of their document, and often, they make
+these adjustments without even realizing it; and yet, the catch is that
+Microsoft Word offers little to no functionality to create standardized
+formatting that leaves no ambiguity when many people need to reproduce the same
+styled documents (or elements within those documents).
+
+That, in my opinion, is the core issue that I have with Word, yet beyond that I
+personally *much* prefer a "What you mean is what you get" approach to creating
+documents. This approach allows a lot more accessibility to a wider range of
+features.  Additionally, a "What you see is what you get" editor like Word
+consistently interferes with its users when they have to simultaneously worry
+about both formatting and content when they really just want to focus on
+content.
+
+I'm not really going to bring up TeX's far superiority for typesetting
+equations specifically since Word introduced the ability to use LaTeX's markup
+to insert/format equations. This won't be the first time Word introduces such
+conveniences. Thus, for the sake of long term arguments in favor of a new
+system, our reasoning needs to be more essential.
+
+### LaTeX is fine!
+
+Oh, how I used to believe this. I once believed LaTeX was the pinnacle of
+typesetting and was only a matter of time until I became an expert, but no.
+After a couple of years using LaTeX (for homeworks admittedly, though I've used
+more formal packages like REVTeX as well), I eventually found myself
+late one night in the middle of a homework assignment when suddenly...I
+stopped.  I took a moment. I looked at what I was doing; and I thought to
+myself...
+
+> *Oh my god, I **hate** this*.
+
+I realized that I hated all of the obscure errors, all of the uncertain and
+ambiguous markup, and all of the constant researching for how to do things that
+I've already done before. It shattered the illusion; and I, for the first time,
+saw LaTeX for what it really was: outdated.
+
+Most of the issues that LaTeX has are inherited from its nonnegotiable
+dependence on TeX, and most of the issues that TeX has are attributed to its
+nonnegotiable dependence on *macros*. Macros do not constitute a programming
+language, they constitute a rudimentary state machine. While some will argue
+that "TeX is Turing complete!", this is, in reality, an implication of a worse
+issue: not only is TeX based on these arcane macros, but these macros are also
+intended to be used in a system with very little fault tolerance. The kind of
+logic that you get from Turing complete language has no business in a markup
+language—the two should be decidedly kept separate.
+
+While it may be that having little fault tolerance isn't the worst thing in the
+world, when you nonetheless pair that with TeX's cryptic error reporting, you
+have a system that is difficult as if *by design.* TeX has very little support
+for debugging, so when a package goes awry, users are left with the
+responsibility to *infer* what caused the error and how to fix it themselves.
+It was this issue that led me to decide that a new system was absolutely a
+necessity. It is clear that TeX/LaTeX present major obstacles for the
+layman—obstacles that are mostly rooted into TeX itself and will never change
+given TeX's need for stability.
+
+### Why not HTML/CSS?
+
+For many reasons, NO.
+
+The point of bringing up HTML/CSS is usually just a suggestion for the markup
+language alone, not necessarily the underlining typesetting engine; but I
+nonetheless disagree with the sort of model that HTML/CSS has going for it:
+both practically and systematically.
+
+To start, HTML is just an *awful* markup language. Tags clutter your content,
+are high maintenance, and are unnecessarily redundant. Additionally the
+syntax does, not enforce proper nesting, so you can end up with things like:
+
+```xml
+<Outer>
+    <Inner>
+    </Outer>
+</Inner>
+```
+
+Though this doesn't come up in practice, it's an absurdity that tags allow for
+something like that at all. In more practical terms, HTML simply doesn't allow
+for optimizing common use cases such as building paragraphs and italicizing
+text.
+
+And while you can do amazing things in theory with both HTML and CSS, there is
+still a deeply rooted issue with the paradigm that really conflicts with the
+use case seen by TeX-based typesetting.
+
+Take the following example: you are including an element that you intend to
+fill with text. The catch is that the text needs to be strictly contained
+within a div with a predefined size (I'll highlight such a div with a grey
+background):
+
+<div
+style="
+background-color:#999999;
+width:85%;
+padding:0 10px;
+height:5rem;
+margin:auto;
+border-radius:10px;
+margin-bottom: 35px;
+">
+Pellentesque dapibus suscipit ligula.  Donec posuere augue in quam.  Etiam vel
+tortor sodales tellus ultricies commodo.  Suspendisse potenti.  Aenean in sem
+ac leo mollis blandit.  Donec neque quam, dignissim in, mollis nec, sagittis
+eu, wisi.  Phasellus lacus.  Etiam laoreet quam sed arcu.  Phasellus at dui in
+ligula mollis ultricies.  Integer placerat tristique nisl.  Praesent augue.
+Fusce commodo.
+</div>
+
+The overflow you see above is a common sight with HTML and CSS. Unfortunately,
+the only solution is to *manually modify the markup* and either adjust the
+text, adjust the div, or create a new div entirely to be filled with the
+overflowing text. When you are working with a rigorous typesetter, where the
+user shouldn't be allowed to modify the dimensions or font size, etc., the only
+option that remains is to create a new div with the same settings.  In my mind,
+the option should be provided in the formatting to allow components to
+"multiply" when needed; meaning that when text overflows these objects, copies
+are created automatically to catch the overflow. In this case, the above would
+look like:
+
+<div
+style="
+background-color:#999999;
+width:85%;
+padding:0 10px;
+height:5rem;
+margin:auto;
+border-radius:10px;
+">
+Pellentesque dapibus suscipit ligula.  Donec posuere augue in quam.  Etiam vel
+tortor sodales tellus ultricies commodo.  Suspendisse potenti.  Aenean in sem
+ac leo mollis blandit.  Donec neque quam, dignissim in, mollis nec, sagittis
+eu, wisi.  Phasellus lacus.  Etiam laoreet quam sed arcu.  Phasellus at dui in
+ligula mollis ultricies.
+</div>
+<div
+style="
+background-color:#999999;
+width:85%;
+padding:0 10px;
+height:5rem;
+margin:auto;
+border-radius:10px;
+">
+Integer placerat tristique nisl.  Praesent augue. Fusce commodo.
+</div>
+
+Since this operation can be performed by the typesetter automatically, the user
+does not need to make any changes to their content in order to preserve the
+document's formatting requirements.
+
+Although it may seem odd to assume that the user would *want* components to
+multiply without their consent, this actually alludes to a much richer system
+that I'll discuss in a future post.

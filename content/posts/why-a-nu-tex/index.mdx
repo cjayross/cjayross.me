@@ -1,0 +1,157 @@
+---
+title: Why a nu TeX?
+date: 2020-03-22
+slug: /why-a-nu-TeX
+tags:
+    - Projects
+    - Typesetting
+---
+
+I'm a student with standards. Consequently, I have been doing homeworks in
+LaTeX for several years now. I've worked with more formal packages such as
+REVTeX, I've created class files, worked with Tikz, etc, etc. I was very happy
+with the results I would always end up with. I enjoyed LaTeX a lot; it made me
+feel...more *professional*.
+
+Though, not long ago, I found myself late one night half way through a homework
+when suddenly...I stopped...I took a moment to look at what I was doing, and I
+thought to myself...
+
+> *Oh my god, I **hate** this*.
+
+Suddenly the glass shattered and I realized just how much I hated macros, how
+much I hated the cryptic error messages, the lack of tracing and debugging, and
+the constant researching for how to do even the simplest things. At that moment,
+I finally saw LaTeX for what it truly was: outdated.
+
+Since then, I began pondering about why this is the case. In truth, most of the
+problems that LaTeX has are inherited from its nonnegotiable dependence on TeX
+and, honestly, most of the issues that TeX has are attributed to its nonnegotiable
+dependence on *macros*.
+
+Macros do not constitute a proper programming language. Their usage is
+ambiguous, hard to debug, and ultimately unpredictable. And while TeX may be
+Turing complete, this only exaggerates the issue. Macros, being as error prone
+as they are, are being used in a system that has *very little fault tolerance*.
+And if that weren't bad enough, given TeX's notoriously poor error reporting
+and lack of tracing, when these macros inevitably do fail they leave it to the
+responsibility of the user to *infer* where in their code they made a mistake.
+Given how programming standards have evolved since 1978, in today's world it
+seems as if TeX is difficult *by design*.
+
+---
+
+I have a dream. A dream where professional typesetting is accessible to any
+layman; where markup is minimal enough to be easy to type and to not create
+clutter, but powerful enough to be functionally equivalent to TeX; where any
+requirements for logic that can only be done in a Turing complete language is
+clearly kept separate from the content and done in a fully featured programming
+language; and where support for extensions, scripting, and package management
+are baked in from the start.
+
+The working title for such a dream is νTeX (not the based name, I'll admit, but
+its subject to change).
+
+---
+
+The core mechanic of TeX's typesetting lies in its use of "boxes and glue".
+When you build a paragraph in TeX, you are really building a list of boxes
+which represent lines, and when you build a line you are really building a list
+of boxes which represent characters. So a box in TeX is some unit where the
+boxes contained within inherit formatting properties such as position.
+
+Glue on the other hand is TeX's concept of "variable spacing" and constitute
+how boxes in a single list are printed relative to one another. To see this
+visually, Overleaf has a post on it
+[here](https://www.overleaf.com/learn/latex/Articles/Boxes_and_Glue:_A_Brief,_but_Visual,_Introduction_Using_LuaTeX).
+
+This model works exceptionally well and it is absolutely essential for any new
+typesetting engine. Essentially, in TeX, documents boil down to simple acyclic
+graphs of boxes and lists of boxes within them. The question that remains is
+how a list of boxes within a given node is arranged when rendered. For one, it
+needs to be determined whether they will be arranged vertically or
+horizontally, and secondly, it needs to be determined how much "stretching and
+shrinking" is allowed between subsequent boxes. Lastly, for paragraphs and
+lines, it needs to be determined how these lists will be broken up so that they
+can fit in their designated space.
+
+My first intention is to better generalize this model. To that end, I'd like to
+formalize a few terms (this may be temporary as the model increases scale):
+
+A *Box*, which is a node in an acyclic graph that contains exactly one other node
+and has a fixed width and height.
+
+A *Block*, which is a node in an acyclic graph that contains a list of child
+nodes. There are two types of blocks: *vertical blocks* and *horizontal
+blocks*. Vertical blocks arrange their children vertically and likewise goes
+for horizontal lists.
+
+A *Character*, which is a glyph to be rendered and can only constitute leaves
+in an acyclic graph.
+
+For the sake of reducing verbosity, I will refer to boxes that contain a
+vertical block as *vertical boxes* and boxes that contain a horizontal block as
+*horizontal boxes*. In general I'll prefix names with "V" and "H" to indicate
+their orientation (such as *vbox* as short for vertical box).
+
+One very important feature of boxes is their (optional) ability to *multiply*.
+To illustrate this operation, take the following box (shaded in grey) contained
+in some vertical block:
+
+<div
+style="
+background-color:#999999;
+width:85%;
+padding:0 10px;
+height:5rem;
+margin:auto;
+border-radius:10px;
+margin-bottom: 35px;
+">
+Pellentesque dapibus suscipit ligula.  Donec posuere augue in quam.  Etiam vel
+tortor sodales tellus ultricies commodo.  Suspendisse potenti.  Aenean in sem
+ac leo mollis blandit.  Donec neque quam, dignissim in, mollis nec, sagittis
+eu, wisi.  Phasellus lacus.  Etiam laoreet quam sed arcu.  Phasellus at dui in
+ligula mollis ultricies.  Integer placerat tristique nisl.  Praesent augue.
+Fusce commodo.
+</div>
+
+As you can see, the paragraph contained in the box extends past the bottom
+of the box. This is unfortunate. However, a solution to this problem exists;
+one in which does not require the user to make any modification to their
+content and without requiring the box to change size. That solution is to
+multiply—or, to create a copy of itself so that the new copy can "catch" the
+overflowing text:
+
+<div
+style="
+background-color:#999999;
+width:85%;
+padding:0 10px;
+height:5rem;
+margin:auto;
+border-radius:10px;
+">
+Pellentesque dapibus suscipit ligula.  Donec posuere augue in quam.  Etiam vel
+tortor sodales tellus ultricies commodo.  Suspendisse potenti.  Aenean in sem
+ac leo mollis blandit.  Donec neque quam, dignissim in, mollis nec, sagittis
+eu, wisi.  Phasellus lacus.  Etiam laoreet quam sed arcu.  Phasellus at dui in
+ligula mollis ultricies.
+</div>
+<div
+style="
+background-color:#999999;
+width:85%;
+padding:0 10px;
+height:5rem;
+margin:auto;
+border-radius:10px;
+">
+Integer placerat tristique nisl.  Praesent augue. Fusce commodo.
+</div>
+
+Obviously, in a real typesetting engine, the contents will be split according
+to some optimization algorithm such as how TeX does, but this is only for
+illustration. Nonetheless, this provides a clean mechanism for "building"
+repeating or common elements of a document such as paragraphs, lines, or even
+entire pages.
